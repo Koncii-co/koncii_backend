@@ -23,4 +23,4 @@ echo "📖 API Documentation: https://$RENDER_EXTERNAL_HOSTNAME/docs"
 echo "🔍 Health Check: https://$RENDER_EXTERNAL_HOSTNAME/health"
 
 # Start the application with Gunicorn
-exec gunicorn travel_concierge.api:app -c gunicorn.conf.py 
+exec gunicorn main:app -c gunicorn.conf.py 

@@ -4,7 +4,7 @@ services:
     runtime: python
     plan: starter
     buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn travel_concierge.api:app -c gunicorn.conf.py
+    startCommand: gunicorn main:app -c gunicorn.conf.py
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.0
