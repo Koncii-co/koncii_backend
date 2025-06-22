@@ -1,9 +1,10 @@
 services:
   - type: web
     name: travel-concierge-api
-    runtime: docker
+    runtime: python
     plan: starter
-    dockerfilePath: ./Dockerfile
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn main:app -c gunicorn.conf.py
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.0
@@ -13,15 +14,9 @@ services:
         value: us-central1
       - key: GOOGLE_PLACES_API_KEY
         sync: false
-      - key: GOOGLE_API_KEY
-        sync: false
       - key: GOOGLE_CLOUD_STORAGE_BUCKET
         sync: false
       - key: GOOGLE_GENAI_USE_VERTEXAI
-        value: "0"
+        value: "1"
       - key: TRAVEL_CONCIERGE_SCENARIO
-        value: travel_concierge/profiles/itinerary_empty_default.json
-      - key: ENVIRONMENT
-        value: production
-      - key: NODE_OPTIONS
-        value: "--max-old-space-size=4096"
+        value: travel_concierge/profiles/itinerary_empty_default.json 
