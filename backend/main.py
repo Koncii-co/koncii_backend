@@ -7,6 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 import json
 from typing import Any, Dict, List
 import pandas as pd
+from typing import List, Optional, Dict, Any
 
 app = FastAPI()
 
@@ -203,4 +204,103 @@ def get_mock_response(message: str) -> Dict[str, Any]:
     
     return {"reply": mock_places, "text": mock_text}
 
+
+
+"""
+json being sent to the `/plan-trip` endpoint:
+
+{
+  "destination": "Paris",
+  "travel_dates": {
+    "start": "2025-08-01",
+    "end": "2025-08-07"
+  },
+  "interests": ["art", "food", "sightseeing"]
+}
+"""
+class TripRequest(BaseModel):
+    destination: Optional[str] = None
+    travel_dates: Optional[Dict[str, str]] = None  # {"start": "2025-08-01", "end": "2025-08-07"}
+    interests: Optional[List[str]] = None
+
+@app.post("/plan-trip")
+async def plan_trip(req: TripRequest):
+    BASE_URL = "http://localhost:8000"
+    missing_info = []
+
+    if not req.destination:
+        missing_info.append("destination")
+    if not req.travel_dates or "start" not in req.travel_dates or "end" not in req.travel_dates:
+        missing_info.append("travel_dates")
+    if not req.interests:
+        missing_info.append("interests")
+
+    if missing_info:
+        return {
+            "status": "incomplete",
+            "missing_info": missing_info,
+            "prompt": f"Please provide the following missing info: {', '.join(missing_info)}"
+        }
+
+    session_id = str(uuid.uuid4())[:8]
+    session_url = f"{BASE_URL}/apps/{APP_NAME}/users/{USER_ID}/sessions/{session_id}"
+    run_url = f"{BASE_URL}/run"
+
+    async with httpx.AsyncClient(timeout=httpx.Timeout(30.0)) as client:
+        try:
+            await client.post(session_url)
+            response = await client.post(run_url, json={
+                "appName": APP_NAME,
+                "userId": USER_ID,
+                "sessionId": session_id,
+                "newMessage": {
+                    "parts": [{
+                        "text": f"Plan a trip to {req.destination} from {req.travel_dates['start']} to {req.travel_dates['end']} with a focus on {', '.join(req.interests)}."
+                    }],
+                    "role": "USER"
+                },
+                "streaming": False
+            })
+            response.raise_for_status()
+            data = response.json()
+        
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Failed to process trip planning: {e}")
+
+    return {
+        "status": "success",
+        "itinerary": data
+    } 
+
+""""
+
+🟡 1. If required fields are missing:
+
+{
+  "status": "incomplete",
+  "missing_info": ["destination", "travel_dates"],
+  "prompt": "Please provide the following missing info: destination, travel_dates"
+}
+
+
+
+🟢 2. If all required data is present and the backend call succeeds:
+
+{
+  "status": "success",
+  "itinerary": { 
+    // whatever the ADK `/run` endpoint returns as JSON
+  }
+}
+
+
+
+🔴 3. If there’s an internal error during the HTTP call:
+
+{
+  "detail": "Failed to process trip planning: <error message>"
+}
+
+
+"""
 #uvicorn backend.main:app --reload --port 8001
