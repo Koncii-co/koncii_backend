@@ -90,4 +90,4 @@ async def chat_with_agent(req: MessageRequest):
     
 
 
-#uvicorn backend.main:app --reload --port 9000
+#uvicorn backend.main:app --reload --port 8001

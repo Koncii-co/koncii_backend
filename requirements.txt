@@ -1,0 +1,39 @@
+# Web Framework
+fastapi==0.115.6
+uvicorn[standard]==0.32.1
+
+# HTTP Client for external API calls
+httpx==0.28.0
+
+# Data Processing
+pandas==2.2.3
+
+# CORS Middleware
+fastapi-cors==0.0.6
+
+# Data Validation
+pydantic==2.10.4
+
+# Environment Variables
+python-dotenv==1.0.1
+
+# Development and Testing
+pytest==8.2.2
+pytest-asyncio==0.24.0
+black==24.10.0
+flake8==7.1.1
+
+# Optional: Additional dependencies for enhanced functionality
+# Database (if needed for future expansion)
+# sqlalchemy==2.0.36
+# psycopg2-binary==2.9.9
+
+# Authentication (if needed for future expansion)
+# python-jose[cryptography]==3.3.0
+# passlib[bcrypt]==1.7.4
+
+# File Upload (if needed for future expansion)
+# python-multipart==0.0.20
+
+# Monitoring and Logging (if needed for future expansion)
+# structlog==24.4.0 
