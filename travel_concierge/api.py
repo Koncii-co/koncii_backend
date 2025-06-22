@@ -33,7 +33,6 @@ def debug_environment():
     print("🔍 DEBUGGING ENVIRONMENT SETUP")
     print(f"Environment: {os.getenv('ENVIRONMENT', 'development')}")
     print(f"Google AI API Key present: {'Yes' if os.getenv('GOOGLE_AI_API_KEY') else 'No'}")
-    print(f"Google Cloud Credentials present: {'Yes' if os.getenv('GOOGLE_APPLICATION_CREDENTIALS_JSON') else 'No'}")
     print(f"Current working directory: {os.getcwd()}")
     print(f"Python executable: {os.sys.executable}")
     
@@ -72,30 +71,6 @@ def debug_environment():
 
 # Run environment debug at startup
 debug_environment()
-
-# Set up Google Cloud authentication for production
-def setup_google_auth():
-    """Set up Google Cloud authentication for production deployment"""
-    # Check if we have service account JSON in environment
-    credentials_json = os.getenv('GOOGLE_APPLICATION_CREDENTIALS_JSON')
-    if credentials_json:
-        try:
-            # Parse the JSON and write to a temporary file
-            credentials_data = json.loads(credentials_json)
-            credentials_path = '/tmp/google-credentials.json'
-            with open(credentials_path, 'w') as f:
-                json.dump(credentials_data, f)
-            
-            # Set the environment variable to point to the file
-            os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = credentials_path
-            print("✅ Google Cloud authentication configured from environment")
-        except Exception as e:
-            print(f"⚠️ Warning: Failed to set up Google Cloud credentials: {e}")
-    else:
-        print("ℹ️ Using default Google Cloud authentication")
-
-# Initialize Google Cloud authentication
-setup_google_auth()
 
 # Create FastAPI app
 app = FastAPI(
@@ -277,34 +252,6 @@ async def mcp_airbnb(request: MCPAirbnbRequest):
         function_calls = []
         function_responses = []
         
-        try:
-            async for event in runner.run_async(
-                user_id=user_id,
-                session_id=session_id,
-                new_message=content
-            ):
-                # Extract text from events
-                if hasattr(event, 'content') and event.content:
-                    if hasattr(event.content, 'parts') and event.content.parts:
-                        for part in event.content.parts:
-                            if part.text:
-                                response_text += part.text
-                            if part.function_call:
-                                function_calls.append({
-                                    "name": part.function_call.name,
-                                    "args": part.function_call.args
-                                })
-                            if part.function_response:
-                                function_responses.append({
-                                    "name": part.function_response.name,
-                                    "response": part.function_response.response
-                                })
-                    elif hasattr(event.content, 'text'):
-                        response_text += event.content.text
-        except Exception as e:
-            print(f"❌ Error during agent execution: {e}")
-            response_text = f"I encountered an error while processing your request: {str(e)}. Please try again."
-        
         # If no response text was collected, provide a default response
         if not response_text.strip():
             response_text = "I'm processing your request. Please try again."
@@ -383,7 +330,6 @@ async def debug_endpoint():
         env_status = {
             "environment": os.getenv('ENVIRONMENT', 'development'),
             "google_ai_api_key": "present" if os.getenv('GOOGLE_AI_API_KEY') else "missing",
-            "google_cloud_credentials": "present" if os.getenv('GOOGLE_APPLICATION_CREDENTIALS_JSON') else "missing",
             "working_directory": os.getcwd(),
             "python_executable": os.sys.executable
         }
