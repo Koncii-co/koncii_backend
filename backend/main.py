@@ -207,6 +207,7 @@ def get_mock_response(message: str) -> Dict[str, Any]:
 
 
 """
+
 json being sent to the `/plan-trip` endpoint:
 
 {
