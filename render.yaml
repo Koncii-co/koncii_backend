@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: travel-concierge-api
+    runtime: python
+    plan: starter
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn travel_concierge.api:app -c gunicorn.conf.py
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: GOOGLE_CLOUD_PROJECT
+        sync: false
+      - key: GOOGLE_CLOUD_LOCATION
+        value: us-central1
+      - key: GOOGLE_PLACES_API_KEY
+        sync: false
+      - key: GOOGLE_CLOUD_STORAGE_BUCKET
+        sync: false
+      - key: GOOGLE_GENAI_USE_VERTEXAI
+        value: "1"
+      - key: TRAVEL_CONCIERGE_SCENARIO
+        value: travel_concierge/profiles/itinerary_empty_default.json 
